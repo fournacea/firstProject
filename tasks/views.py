@@ -4,23 +4,29 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect
 
 
-# Initialize task list variable
-tasks= []
-
 #Create a base form
 class NewTaskForm(forms.Form):
     task = forms.CharField(label="New Task")
 
 #View tasks
 def index(request):
+    # Check if there already exists a "tasks" key in our session
+    if "tasks" not in request.session:
+
+        # If not, create a new list
+        request.session["tasks"] = []
+
     return render(request, "tasks/index.html", {
-        "tasks": tasks
+        "tasks": request.session["tasks"]
     })
 
 #Add tasks
 def add(request):
     #Check if method is POST
     if request.method == "POST":
+        
+        #See POST data in console
+        print(request.POST)
 
         #Take in data the user submitted as form
         form = NewTaskForm(request.POST)
@@ -32,7 +38,7 @@ def add(request):
             task = form.cleaned_data["task"]
 
             #Add the new task to our list of tasks
-            tasks.append(task)
+            request.session["tasks"] += [task]
 
             #Redirect the user to list of tasks
             return HttpResponseRedirect(reverse("tasks:index"))
